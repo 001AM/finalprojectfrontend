@@ -1,9 +1,14 @@
 // src/components/LoginPage.js
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,7 +26,6 @@ const LoginPage = () => {
       const res = await axios.post(`http://192.168.0.107:8000/login/`, postData);
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
-      setLogin(true)
       navigate("/");
     } catch (error) {
       console.error("Error:", error);
@@ -39,7 +43,7 @@ const LoginPage = () => {
         style={{ maxWidth: "400px", width: "100%", opacity: 0.95 }}
       >
         <h2 className="text-center text-info">Login</h2>
-        <form onSubmit={handleLogin}>
+        <form >
           <div className="mb-3">
             <input
               type="email"
