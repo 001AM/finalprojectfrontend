@@ -18,12 +18,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const postData = new FormData();
-    postData.append("email", formData.email);
+    postData.append("username", formData.email);
     postData.append("password", formData.password);
 
     try {
       console.log(postData);
-      const res = await axios.post(`http://192.168.0.107:8000/login/`, postData);
+      const res = await axios.post(`http://192.168.0.107:8000/authentication/login/`, postData);
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
       navigate("/");
@@ -66,7 +66,7 @@ const LoginPage = () => {
       required
     />
   </div>
-  <button type="submit" className="btn btn-info w-100">
+  <button type="submit" className="btn btn-info w-100" onClick={(e)=>{handleSubmit(e)}}>
     Login
   </button>
 </form>
@@ -76,7 +76,7 @@ const LoginPage = () => {
           <span
             className="text-info"
             style={{ cursor: "pointer" }}
-            onClick={handleSubmit}
+            // onClick={}
           >
             Sign up
           </span>

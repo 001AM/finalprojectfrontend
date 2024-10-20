@@ -1,7 +1,6 @@
 import React from "react";
 import { FaEnvelope, FaLinkedin, FaTwitter, FaStar } from "react-icons/fa";
 import profilePic from "../../assets/Interv.png"; // Assuming you have a placeholder image
-import Navbar from "../Navbar";
 
 const Profile = () => {
   return (
