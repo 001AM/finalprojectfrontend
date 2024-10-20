@@ -36,7 +36,7 @@ const LoginPage = () => {
   return (
     <div
       className="d-flex align-items-center justify-content-center"
-      style={{ backgroundColor: "#343a40" }} // Dark background
+      style={{width:'221vh', height:'100vh', backgroundColor: "#343a40" }} // Dark background
     >
       <div
         className="bg-light p-4 rounded shadow"

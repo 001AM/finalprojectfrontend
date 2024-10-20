@@ -15,15 +15,17 @@ const InterviewPage = () => {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [mic, setMic] = useState(true);
   const [micText, setMicText] = useState("Start");
-  const [question, setQuestions] = useState([])
-  const [resume, setResume] = useState()
+  const [questions, setQuestions] = useState([]);
+  const [resume, setResume] = useState(null);
+  const [isResumeUploaded, setIsResumeUploaded] = useState(false); // Track if resume is uploaded
+  const [isWebcamVisible, setIsWebcamVisible] = useState(false); // Track if webcam and transcript are visible
 
+  // Fetch the questions
   useEffect(() => {
     async function getData() {
-      const res = await axios.get('http://192.168.0.107:8000/analyzer/upload/')
-
+      const res = await axios.get('http://192.168.0.107:8000/analyzer/upload/');
     }
-  }, [])
+  }, []);
 
   // Speech Recognition Setup
   const startListening = () =>
@@ -31,12 +33,24 @@ const InterviewPage = () => {
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
 
-  // Questions array
-  const questions = [
+  const interviewQuestions = [
     "Tell me about yourself.",
     "Why do you want this job?",
     "What is your greatest strength?",
   ];
+
+  const handleResumeUpload = (e) => {
+    setResume(e.target.files[0]);
+  };
+
+  const handleNextClick = () => {
+    if (resume) {
+      setIsResumeUploaded(true);
+      setIsWebcamVisible(true);
+    } else {
+      setError("Please upload your resume to proceed.");
+    }
+  };
 
   // Toggle Microphone
   const handleMic = () => {
@@ -74,7 +88,6 @@ const InterviewPage = () => {
 
   const stopTimer = () => {
     setIsTimerActive(false);
-    // setTimer(0)
   };
 
   // Access user's camera
@@ -93,7 +106,9 @@ const InterviewPage = () => {
       }
     };
 
-    getUserCamera();
+    if (isWebcamVisible) {
+      getUserCamera();
+    }
 
     // Clean up the video stream when component unmounts
     return () => {
@@ -103,80 +118,46 @@ const InterviewPage = () => {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [isWebcamVisible]);
 
   // Fetch the next question
   const fetchNextQuestion = () => {
-    const nextQuestion = questions[questionIndex];
+    const nextQuestion = interviewQuestions[questionIndex];
     setCurrentQuestion(nextQuestion);
     setIsLoading(false);
-  };
-
-  // Submit the answer for evaluation
-  const submitAnswer = async (answer) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/gemini-api/score", {
-        method: "POST",
-        body: JSON.stringify({ question: currentQuestion, answer }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      setScore((prevScore) => prevScore + data.score);
-
-      if (questionIndex < questions.length - 1) {
-        setQuestionIndex((prevIndex) => prevIndex + 1);
-        resetTranscript();
-        setTimer(120);
-      } else {
-        console.log("Interview completed");
-      }
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Error submitting answer:", err);
-      setError("Unable to submit your answer. Please try again.");
-      setIsLoading(false);
-    }
   };
 
   useEffect(() => {
     fetchNextQuestion();
   }, [questionIndex]);
 
-  const stopListening = () => {
-    setIsRecording(false);
-    SpeechRecognition.stopListening();
-    setIsTimerActive(false);
-  };
-
   if (!browserSupportsSpeechRecognition) {
     return <p>Speech Recognition API is not supported in this browser.</p>;
   }
 
   return (
-    <>
-    {
-      
-    }
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginTop: "50px",
-        }}
-      >
-        <h1 className="title">Stark AI - Real-Time Interview</h1>
-        <div
-          className="flex flex-row"
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            marginTop: "20px",
-          }}
-        >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "50px" }}>
+      <h1 className="title">Stark AI - Real-Time Interview</h1>
+
+      {/* Resume Upload Section */}
+      {!isResumeUploaded && (
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={handleResumeUpload}
+            style={{ marginBottom: "10px" }}
+          />
+          <button onClick={handleNextClick} style={{ padding: "8px", borderRadius: "10px", backgroundColor: "green", color: "white" }}>
+            Next
+          </button>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
+      )}
+
+      {/* Webcam and Transcript Section */}
+      {isWebcamVisible && (
+        <div className="flex flex-row" style={{ display: "flex", flexDirection: "row", marginTop: "20px" }}>
           <div style={{ Width: "80vh" }}>
             <video
               style={{ borderRadius: "30px" }}
@@ -186,20 +167,11 @@ const InterviewPage = () => {
               className="video"
             ></video>
           </div>
-          <div
-            style={{
-              color: "black",
-              padding: "20px",
-              borderRadius: "30px",
-              border: "1px solid black",
-            }}
-          >
+          <div style={{ color: "black", padding: "20px", borderRadius: "30px", border: "1px solid black" }}>
             <div className="container">
-              <h2 style={{ color: "black" }}></h2>
+              <h2 style={{ color: "black" }}>{currentQuestion}</h2>
               <br />
-
               <div className="main-content">{transcript}</div>
-
               <div className="btn-style">
                 <button
                   style={{ backgroundColor: `${micText === "Start" ? 'blue' : 'red'}`, padding: "8px", borderRadius: "10px", color: "white" }}
@@ -218,8 +190,8 @@ const InterviewPage = () => {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 
