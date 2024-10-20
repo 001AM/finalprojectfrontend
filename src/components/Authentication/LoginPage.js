@@ -5,12 +5,29 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Handle login logic here
-    console.log("User logged in");
-    navigate("/");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const postData = new FormData();
+    postData.append("email", formData.email);
+    postData.append("password", formData.password);
+
+    try {
+      console.log(postData);
+      const res = await axios.post(`http://192.168.0.107:8000/login/`, postData);
+      localStorage.setItem("access_token", res.data.access);
+      localStorage.setItem("refresh_token", res.data.refresh);
+      setLogin(true)
+      navigate("/");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
 
   return (
     <div
@@ -28,6 +45,7 @@ const LoginPage = () => {
               type="email"
               className="form-control"
               placeholder="Email"
+              onChange={handleChange}
               required
             />
           </div>
@@ -36,6 +54,7 @@ const LoginPage = () => {
               type="password"
               className="form-control"
               placeholder="Password"
+              onChange={handleChange}
               required
             />
           </div>
@@ -48,7 +67,7 @@ const LoginPage = () => {
           <span
             className="text-info"
             style={{ cursor: "pointer" }}
-            onClick={() => navigate("/signup")}
+            onClick={handleSubmit}
           >
             Sign up
           </span>
