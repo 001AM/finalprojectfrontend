@@ -9,7 +9,6 @@ const Profile = () => {
       className=""
       style={{ display: "flex flex-column", width: "100vw", height: "100vh" }}
     >
-      <Navbar />
       <div
         className="bg-white p-4 rounded shadow-lg"
         style={{ height: "90vh" }}
