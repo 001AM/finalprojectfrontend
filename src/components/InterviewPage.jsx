@@ -1,26 +1,59 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./InterviewPage.css"; // Add CSS for styling
+import "./InterviewPage.css";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import axios from "axios";
 
 const InterviewPage = () => {
   const videoRef = useRef(null);
-  const [transcript, setTranscript] = useState(""); // Persistent transcript
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState(null);
-  const recognitionRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(120); // 2-minute timer (120 seconds)
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [mic, setMic] = useState(true);
+  const [micText, setMicText] = useState("Start");
+  const [question, setQuestions] = useState([])
+  const [resume, setResume] = useState()
 
+  useEffect(() => {
+    async function getData() {
+      const res = await axios.get('http://192.168.0.107:8000/analyzer/upload/')
+
+    }
+  }, [])
+
+  // Speech Recognition Setup
+  const startListening = () =>
+    SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
+
+  // Questions array
   const questions = [
     "Tell me about yourself.",
     "Why do you want this job?",
     "What is your greatest strength?",
   ];
 
-  // Start timer countdown
+  // Toggle Microphone
+  const handleMic = () => {
+    if (mic) {
+      setMic(false);
+      SpeechRecognition.stopListening();
+      setMicText("Start");
+      stopTimer(); // Stop the timer when the mic is stopped
+    } else {
+      setMic(true);
+      startListening();
+      setMicText("Stop");
+      startTimer(); // Start the timer when the mic is started
+    }
+  };
+
+  // Timer countdown
   useEffect(() => {
     let interval = null;
     if (isTimerActive && timer > 0) {
@@ -29,12 +62,22 @@ const InterviewPage = () => {
       }, 1000);
     } else if (timer === 0) {
       clearInterval(interval);
-      recognitionRef.current && recognitionRef.current.stop(); // Stop recording when time runs out
+      SpeechRecognition.stopListening();
     }
     return () => clearInterval(interval);
   }, [isTimerActive, timer]);
 
-  // Access the user's camera using the getUserMedia API
+  const startTimer = () => {
+    setIsTimerActive(true);
+    setTimer(120); // Reset the timer to 2 minutes
+  };
+
+  const stopTimer = () => {
+    setIsTimerActive(false);
+    // setTimer(0)
+  };
+
+  // Access user's camera
   useEffect(() => {
     const getUserCamera = async () => {
       try {
@@ -49,67 +92,27 @@ const InterviewPage = () => {
         setError("Unable to access the camera. Please check your permissions.");
       }
     };
+
     getUserCamera();
-  }, []);
 
-  // Set up speech recognition and handle pauses without resetting transcript
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-
-      recognition.continuous = true; // Continuous recognition for pauses
-      recognition.interimResults = true; // Allow partial results
-
-      recognition.onstart = () => {
-        setIsRecording(true);
-        setIsTimerActive(true); // Start the timer when recording starts
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-        setIsTimerActive(false); // Stop the timer when recording ends
-        console.log("Speech recognition has stopped.");
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        setError("Speech recognition error occurred. Please try again.");
-      };
-
-      recognition.onresult = (event) => {
-        let interimTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcriptPart = event.results[i][0].transcript;
-          interimTranscript += transcriptPart;
-        }
-        setTranscript((prevTranscript) => prevTranscript + " " + interimTranscript); // Append new speech data
-      };
-
-      recognition.start(); // Start recognition on component mount
-    } else {
-      console.log("Speech Recognition API not supported in this browser.");
-      setError("Speech Recognition API is not supported in this browser.");
-    }
+    // Clean up the video stream when component unmounts
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   // Fetch the next question
-  const fetchNextQuestion = async () => {
-    try {
-      setIsLoading(true);
-      const nextQuestion = questions[questionIndex];
-      setCurrentQuestion(nextQuestion);
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Error fetching question:", err);
-      setError("Unable to fetch the next question. Please try again.");
-      setIsLoading(false);
-    }
+  const fetchNextQuestion = () => {
+    const nextQuestion = questions[questionIndex];
+    setCurrentQuestion(nextQuestion);
+    setIsLoading(false);
   };
 
-  // Submit answer to Gemini for evaluation and scoring
+  // Submit the answer for evaluation
   const submitAnswer = async (answer) => {
     try {
       setIsLoading(true);
@@ -125,8 +128,8 @@ const InterviewPage = () => {
 
       if (questionIndex < questions.length - 1) {
         setQuestionIndex((prevIndex) => prevIndex + 1);
-        setTranscript(""); // Clear transcript for the new question
-        setTimer(120); // Reset the timer for the next question
+        resetTranscript();
+        setTimer(120);
       } else {
         console.log("Interview completed");
       }
@@ -142,59 +145,81 @@ const InterviewPage = () => {
     fetchNextQuestion();
   }, [questionIndex]);
 
+  const stopListening = () => {
+    setIsRecording(false);
+    SpeechRecognition.stopListening();
+    setIsTimerActive(false);
+  };
+
+  if (!browserSupportsSpeechRecognition) {
+    return <p>Speech Recognition API is not supported in this browser.</p>;
+  }
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginTop: "50px",
-      }}
-    >
-      <h1 className="title">Stark AI - Real-Time Interview</h1>
+    <>
+    {
+      
+    }
       <div
-        className="flex flex-row"
         style={{
           display: "flex",
-          flexDirection: "row",
-          marginTop: "20px",
-          gap: "80px",
+          flexDirection: "column",
+          alignItems: "center",
+          marginTop: "50px",
         }}
       >
-        <div>
-          <video
-            style={{ borderRadius: "30px" }}
-            ref={videoRef}
-            autoPlay
-            muted
-            className="video"
-          ></video>
-        </div>
+        <h1 className="title">Stark AI - Real-Time Interview</h1>
         <div
+          className="flex flex-row"
           style={{
-            backgroundColor: "#222b37",
-            color: "white",
-            padding: "20px",
-            borderRadius: "30px",
+            display: "flex",
+            flexDirection: "row",
+            marginTop: "20px",
           }}
         >
-          <div>
-            <h2 className="question-title">
-              {currentQuestion || "Fetching question..."}
-            </h2>
-            <p className="transcript">{transcript || "Listening..."}</p>
-            {isRecording && <p className="status">Recording...</p>}
-            {error && <p className="error">{error}</p>}
-            <p className="timer">
-              Time left: {Math.floor(timer / 60)}:{timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
-            </p>
+          <div style={{ Width: "80vh" }}>
+            <video
+              style={{ borderRadius: "30px" }}
+              ref={videoRef}
+              autoPlay
+              muted
+              className="video"
+            ></video>
           </div>
-          <div className="score-container">
-            <h2 className="score-title">Score: {score}</h2>
+          <div
+            style={{
+              color: "black",
+              padding: "20px",
+              borderRadius: "30px",
+              border: "1px solid black",
+            }}
+          >
+            <div className="container">
+              <h2 style={{ color: "black" }}></h2>
+              <br />
+
+              <div className="main-content">{transcript}</div>
+
+              <div className="btn-style">
+                <button
+                  style={{ backgroundColor: `${micText === "Start" ? 'blue' : 'red'}`, padding: "8px", borderRadius: "10px", color: "white" }}
+                  onClick={handleMic}
+                  disabled={timer === 0}
+                >
+                  {micText}
+                </button>
+              </div>
+              <div className="timer">
+                <h3>Timer: {timer}s</h3>
+              </div>
+            </div>
+            <div className="score-container">
+              <h2 className="score-title">Score: {score}</h2>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

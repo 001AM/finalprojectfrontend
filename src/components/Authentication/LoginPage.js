@@ -36,36 +36,41 @@ const LoginPage = () => {
   return (
     <div
       className="d-flex align-items-center justify-content-center"
-      style={{ height: "100vh", width: "100vw", backgroundColor: "#343a40" }} // Dark background
+      style={{ backgroundColor: "#343a40" }} // Dark background
     >
       <div
         className="bg-light p-4 rounded shadow"
         style={{ maxWidth: "400px", width: "100%", opacity: 0.95 }}
       >
         <h2 className="text-center text-info">Login</h2>
-        <form >
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Email"
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Password"
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <button type="submit" className="btn btn-info w-100">
-            Login
-          </button>
-        </form>
+        <form onSubmit={handleSubmit}> {/* Add onSubmit to form */}
+  <div className="mb-3">
+    <input
+      type="email"
+      className="form-control"
+      name="email" // Add name attribute
+      value={formData.email} // Bind value to state
+      placeholder="Email"
+      onChange={handleChange}
+      required
+    />
+  </div>
+  <div className="mb-3">
+    <input
+      type="password"
+      className="form-control"
+      name="password" // Add name attribute
+      value={formData.password} // Bind value to state
+      placeholder="Password"
+      onChange={handleChange}
+      required
+    />
+  </div>
+  <button type="submit" className="btn btn-info w-100">
+    Login
+  </button>
+</form>
+    
         <p className="mt-3 text-center">
           Don't have an account?{" "}
           <span

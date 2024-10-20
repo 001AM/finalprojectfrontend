@@ -39,14 +39,14 @@ const SignupPage = () => {
   return (
     <div
       className="d-flex align-items-center justify-content-center"
-      style={{ height: "100vh", width: "100vw", backgroundColor: "#343a40" }} // Dark background
+      style={{ backgroundColor: "#343a40" }} 
     >
       <div
         className="bg-light p-4 rounded shadow"
         style={{ maxWidth: "400px", width: "100%", opacity: 0.95 }}
       >
         <h2 className="text-center text-info">Signup</h2>
-        <form onSubmit={handleSave}> {/* Add onSubmit to form */}
+        <form onSubmit={handleSave}>
   <div className="mb-3">
     <input
       type="text"
