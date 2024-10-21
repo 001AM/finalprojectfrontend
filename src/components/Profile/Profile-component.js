@@ -4,7 +4,7 @@ import profilePic from "../../assets/Interv.png"; // Assuming you have a placeho
 
 const ProfileCard = () => {
   return (
-    <div className="profile-card bg-white p-4 rounded shadow-lg h-50">
+    <div className="profile-card bg-white p-3 rounded shadow-lg h-50">
       {/* Profile Header */}
       <div className="d-flex align-items-center border-bottom pb-3 mb-3">
         <img
