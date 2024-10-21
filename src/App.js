@@ -7,6 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import InterviewPage from "./components/InterviewPage";
+import Jobs from "./components/Jobs/Jobs";
 import HomePage from "./components/HomePage";
 import Dashboard from "./components/Dashboard/Dashboard";
 import LoginPage from "./components/Authentication/LoginPage";
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/mock-interview" element={<MockInterview />} />
+            <Route path="/jobs" element={<Jobs />} />
           </Routes>
         </BaseLayout>
       ) : (

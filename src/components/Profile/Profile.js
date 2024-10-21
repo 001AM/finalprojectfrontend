@@ -1,146 +1,112 @@
-import React from "react";
-import { FaEnvelope, FaLinkedin, FaTwitter, FaStar } from "react-icons/fa";
-import profilePic from "../../assets/Interv.png"; // Assuming you have a placeholder image
-import Navbar from "../Navbar";
+import React from 'react';
+import './Profile.css'; // Create a separate CSS file for styles
 
-const Profile = () => {
+export default function ProfilePage() {
   return (
-    <div
-      className=""
-      style={{ display: "flex flex-column", width: "100vw", height: "100vh" }}
-    >
-      <Navbar />
-      <div
-        className="bg-white p-4 rounded shadow-lg"
-        style={{ height: "90vh" }}
-      >
-        {/* Profile Header */}
-        <div className="d-flex align-items-center border-bottom pb-3 mb-3">
-          <img
-            src={profilePic}
-            alt="profile"
-            className="rounded-circle"
-            style={{ width: "100px", height: "100px" }}
-          />
-          <div className="ml-3">
-            <h2 className="font-weight-bold mb-0">John Doe</h2>
-            <p className="text-muted mb-1">Software Engineer at XYZ Corp</p>
-            <div className="d-flex align-items-center">
-              <span className="text-warning mr-1">
-                <FaStar />
-              </span>
-              <span>4.5</span>
-              <span className="text-muted ml-2">(120 reviews)</span>
+    <section className="profile-section">
+      <div className="container">
+        <div className="breadcrumb">
+          <a href="#">Home</a> &gt; <a href="#">User</a> &gt; <span>User Profile</span>
+        </div>
+
+        <div className="profile-content">
+          <div className="profile-card">
+            <div className="profile-header">
+              <img
+                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                alt="avatar"
+                className="avatar"
+              />
+              <p className="role">Full Stack Developer</p>
+              <p className="location">Bay Area, San Francisco, CA</p>
+              <div className="buttons">
+                <button className="follow-btn">Follow</button>
+                <button className="message-btn">Message</button>
+              </div>
+            </div>
+
+            <div className="social-links">
+              <div className="link">
+                <i className="fas fa-globe"></i>
+                <span>https://mdbootstrap.com</span>
+              </div>
+              <div className="link">
+                <i className="fab fa-github"></i>
+                <span>mdbootstrap</span>
+              </div>
+              <div className="link">
+                <i className="fab fa-twitter"></i>
+                <span>@mdbootstrap</span>
+              </div>
+              <div className="link">
+                <i className="fab fa-instagram"></i>
+                <span>mdbootstrap</span>
+              </div>
+              <div className="link">
+                <i className="fab fa-facebook"></i>
+                <span>mdbootstrap</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Contact and Social Media */}
-        <div className="d-flex justify-content-start mb-3 gap-2">
-          <button className="btn btn-primary mr-2">
-            <FaEnvelope className="mr-3" />
-            Message
-          </button>
-          <a
-            href="https://www.linkedin.com"
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-outline-primary mr-2"
-          >
-            <FaLinkedin className="mr-3" />
-            LinkedIn
-          </a>
-          <a
-            href="https://www.twitter.com"
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-outline-primary"
-          >
-            <FaTwitter className="mr-1" />
-            Twitter
-          </a>
-        </div>
-
-        {/* Bio Section */}
-        <div className="mb-4">
-          <h4 className="font-weight-bold">About</h4>
-          <p className="text-muted">
-            Experienced software engineer with a passion for developing
-            innovative programs that expedite the efficiency and effectiveness
-            of organizational success. Well-versed in technology and writing
-            code to create systems that are reliable and user-friendly.
-          </p>
-        </div>
-
-        {/* Tabs (Overview, Reviews, Salaries, Interviews) */}
-        <div className="border-bottom mb-4">
-          <ul className="nav nav-tabs">
-            <li className="nav-item">
-              <a href="#overview" className="nav-link active">
-                Overview
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#reviews" className="nav-link">
-                Reviews
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#salaries" className="nav-link">
-                Salaries
-              </a>
-            </li>
-            <li className="nav-item">
-              <a href="#interviews" className="nav-link">
-                Interviews
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* Overview Tab Content */}
-        <div id="overview">
-          <h4 className="font-weight-bold mb-3">Overview</h4>
-          <div className="row">
-            <div className="col-md-6">
-              <h5>Position</h5>
-              <p>Software Engineer</p>
+          <div className="info-card">
+            <div className="info-row">
+              <span>Full Name</span>
+              <span className="text-muted">Johnatan Smith</span>
             </div>
-            <div className="col-md-6">
-              <h5>Company</h5>
-              <p>XYZ Corp</p>
+            <div className="info-row">
+              <span>Email</span>
+              <span className="text-muted">example@example.com</span>
             </div>
-            <div className="col-md-6">
-              <h5>Location</h5>
-              <p>San Francisco, CA</p>
+            <div className="info-row">
+              <span>Phone</span>
+              <span className="text-muted">(097) 234-5678</span>
             </div>
-            <div className="col-md-6">
-              <h5>Experience</h5>
-              <p>5 years</p>
+            <div className="info-row">
+              <span>Mobile</span>
+              <span className="text-muted">(098) 765-4321</span>
+            </div>
+            <div className="info-row">
+              <span>Address</span>
+              <span className="text-muted">Bay Area, San Francisco, CA</span>
             </div>
           </div>
-        </div>
 
-        {/* Reviews Tab Content (Placeholder) */}
-        <div id="reviews" style={{ display: "none" }}>
-          <h4 className="font-weight-bold mb-3">Reviews</h4>
-          <p>No reviews yet.</p>
-        </div>
-
-        {/* Salaries Tab Content (Placeholder) */}
-        <div id="salaries" style={{ display: "none" }}>
-          <h4 className="font-weight-bold mb-3">Salaries</h4>
-          <p>No salary data yet.</p>
-        </div>
-
-        {/* Interviews Tab Content (Placeholder) */}
-        <div id="interviews" style={{ display: "none" }}>
-          <h4 className="font-weight-bold mb-3">Interviews</h4>
-          <p>No interview data yet.</p>
+          <div className="project-status">
+            <h4>Project Status</h4>
+            <div className="project-item">
+              <span>Web Design</span>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: '80%' }}></div>
+              </div>
+            </div>
+            <div className="project-item">
+              <span>Website Markup</span>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: '72%' }}></div>
+              </div>
+            </div>
+            <div className="project-item">
+              <span>One Page</span>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: '89%' }}></div>
+              </div>
+            </div>
+            <div className="project-item">
+              <span>Mobile Template</span>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: '55%' }}></div>
+              </div>
+            </div>
+            <div className="project-item">
+              <span>Backend API</span>
+              <div className="progress">
+                <div className="progress-bar" style={{ width: '66%' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default Profile;
+}
