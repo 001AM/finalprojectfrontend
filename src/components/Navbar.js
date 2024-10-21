@@ -33,16 +33,7 @@ const Navbar = () => {
         </div>
         <ul className="sidebar-links">
           <li>
-            <Link to="/community">Community</Link>
-          </li>
-          <li>
-            <Link to="/jobs">Jobs</Link>
-          </li>
-          <li>
             <Link to="/mock-interview">MockInterview</Link>
-          </li>
-          <li>
-            <Link to="/salaries">Salaries</Link>
           </li>
         </ul>
       </div>
@@ -59,25 +50,15 @@ const Navbar = () => {
           </div>
           <div className="col-sm container ">
             <div className="row d-flex justify-content-center">
-              <Link
-                to="/dashboard"
+            <Link
+                to="/interview"
                 style={{ color: "inherit", textDecoration: "none" }}
-                className={` ${currentPage === "Community" ? "border-bottom" : ""} cursor-pointer col-sm h5 d-flex justify-content-center`}
+                className={` ${currentPage === "Interview" ? "border-bottom" : ""} cursor-pointer col-sm h5 d-flex justify-content-center`}
                 onClick={() => {
-                  setcurrentPage("Community");
+                  setcurrentPage("Interview");
                 }}
               >
-                Community
-              </Link>
-              <Link
-                to="/jobs"
-                style={{ color: "inherit", textDecoration: "none" }}
-                className={` ${currentPage === "Jobs" ? "border-bottom" : ""} cursor-pointer col-sm h5 d-flex justify-content-center`}
-                onClick={() => {
-                  setcurrentPage("Jobs");
-                }}
-              >
-                Jobs
+                Interview
               </Link>
               <Link
                 to="/mock-interview"
@@ -89,18 +70,20 @@ const Navbar = () => {
               >
                 MockInterview
               </Link>
-
-              <div
-                className={` ${currentPage === "Salaries" ? "border-bottom" : ""} cursor-pointer col-sm h5 d-flex justify-content-center`}
+              <Link
+                to="/profile"
+                style={{ color: "inherit", textDecoration: "none" }}
+                className={` ${currentPage === "Profile" ? "border-bottom" : ""} cursor-pointer col-sm h5 d-flex justify-content-center`}
                 onClick={() => {
-                  setcurrentPage("Salaries");
+                  setcurrentPage("Profile");
                 }}
               >
-                Salaries
-              </div>
+                Profile
+              </Link>
             </div>
           </div>
-          <div className="col-sm"></div>
+          <div className="col-sm">
+          </div>
         </div>
       </div>
     </div>

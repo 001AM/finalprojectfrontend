@@ -45,6 +45,7 @@ const Dashboard = () => {
         flexDirection: "column",
         width: "100%",
         height: "100%",
+        overflow : "hidden"
       }}
     >
       <div className="row w-auto mt-2" style={{ flex: 1, overflow: "hidden" }}>
@@ -53,16 +54,16 @@ const Dashboard = () => {
         </div>
 
         <div
-          className="container col-lg-6 col-md-12 m-2"
+          className="container col-lg-5 col-md-12 ml-4"
           style={{ flex: 1, overflow: "hidden", height: "100%" }}
         >
           <PostBar />
           <Feed posts={posts} />
         </div>
-
+{/* 
         <div className="d-none d-lg-flex container col-lg-3 justify-content-center">
           <ProfileCard />
-        </div>
+        </div> */}
       </div>
     </div>
   );

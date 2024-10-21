@@ -1,0 +1,132 @@
+.profile-section {
+    background-color: #eee;
+    padding: 40px 20px;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .breadcrumb {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .profile-content {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .profile-card, .info-card, .project-status {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex: 1;
+  }
+  
+  .profile-header {
+    text-align: center;
+  }
+  
+  .avatar {
+    border-radius: 50%;
+    width: 150px;
+  }
+  
+  .role, .location {
+    color: #6c757d;
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  .follow-btn, .message-btn {
+    padding: 10px 20px;
+    margin: 0 5px;
+  }
+  
+  .social-links {
+    margin-top: 20px;
+  }
+  
+  .link {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .link i {
+    margin-right: 10px;
+  }
+  
+  .info-card {
+    margin-top: 20px;
+  }
+  
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .project-status {
+    margin-top: 20px;
+  }
+  
+  .project-item {
+    margin-bottom: 15px;
+  }
+  
+  .progress {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    height: 10px;
+    overflow: hidden;
+  }
+  
+  .progress-bar {
+    background-color: #007bff;
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .close {
+    cursor: pointer;
+    align-self: flex-end;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  

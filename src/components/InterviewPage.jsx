@@ -1,102 +1,99 @@
-import React, { useEffect, useRef, useState } from "react";
-import "./InterviewPage.css";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import React, { useState, useRef, useEffect } from "react";
+import CreateAxiosInstance from "../Axios";
 import axios from "axios";
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import { useNavigate } from "react-router-dom";
 
 const InterviewPage = () => {
+  const axiosInstance = CreateAxiosInstance();
   const videoRef = useRef(null);
-  const [isRecording, setIsRecording] = useState(false);
+  const [formState, setFormState] = useState({
+    resume: null,
+    transcript: "",
+    role: "",
+  });
   const [error, setError] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState("");
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [timer, setTimer] = useState(120); // 2-minute timer (120 seconds)
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [mic, setMic] = useState(true);
-  const [micText, setMicText] = useState("Start");
-  const [questions, setQuestions] = useState([]);
-  const [resume, setResume] = useState(null);
-  const [isResumeUploaded, setIsResumeUploaded] = useState(false); // Track if resume is uploaded
-  const [isWebcamVisible, setIsWebcamVisible] = useState(false); // Track if webcam and transcript are visible
-
-  // Fetch the questions
-  useEffect(() => {
-    async function getData() {
-      const res = await axios.get('http://192.168.0.107:8000/analyzer/upload/');
-    }
-  }, []);
-
-  // Speech Recognition Setup
-  const startListening = () =>
-    SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
-
-  const interviewQuestions = [
-    "Tell me about yourself.",
-    "Why do you want this job?",
-    "What is your greatest strength?",
-  ];
+  const [isResumeUploaded, setIsResumeUploaded] = useState(false);
+  const [isWebcamVisible, setIsWebcamVisible] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
+  const [question, setQuestion] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [id, setId] = useState();
+  const [loading, setLoading] = useState(false); // Loading state
+  const navigate = useNavigate();
 
   const handleResumeUpload = (e) => {
-    setResume(e.target.files[0]);
+    setFormState({ ...formState, resume: e.target.files[0] });
   };
 
-  const handleNextClick = () => {
-    if (resume) {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormState({ ...formState, [name]: value });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!formState.resume || !formState.transcript || !formState.role) {
+      setError("Please upload your resume and fill out all fields.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", formState.resume);
+    formData.append("nottranscript", "False");
+    formData.append("transcript", formState.transcript);
+    formData.append("role", formState.role);
+
+    setLoading(true); // Start loading
+
+    try {
+      const response = await axiosInstance.post(
+        "http://192.168.0.107:8000/anaylzer/upload/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Resume uploaded successfully:", response.data);
       setIsResumeUploaded(true);
+      setId(response.data.id);
+      setError(null);
       setIsWebcamVisible(true);
-    } else {
-      setError("Please upload your resume to proceed.");
+      setIsTranscribing(true);
+      const questionsWithAnswers = response.data.keywords.map(q => ({ ...q, answer: "" }));
+      setQuestion(questionsWithAnswers);
+    } catch (error) {
+      console.error("Error uploading resume:", error);
+      setError("Failed to upload resume. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
-  // Toggle Microphone
-  const handleMic = () => {
-    if (mic) {
-      setMic(false);
-      SpeechRecognition.stopListening();
-      setMicText("Start");
-      stopTimer(); // Stop the timer when the mic is stopped
-    } else {
-      setMic(true);
-      startListening();
-      setMicText("Stop");
-      startTimer(); // Start the timer when the mic is started
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < question.length - 1) {
+      const updatedQuestions = [...question];
+      updatedQuestions[currentQuestionIndex].answer = transcript;
+      setQuestion(updatedQuestions);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      resetTranscript();
     }
   };
 
-  // Timer countdown
-  useEffect(() => {
-    let interval = null;
-    if (isTimerActive && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prevTime) => prevTime - 1);
-      }, 1000);
-    } else if (timer === 0) {
-      clearInterval(interval);
-      SpeechRecognition.stopListening();
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
-    return () => clearInterval(interval);
-  }, [isTimerActive, timer]);
-
-  const startTimer = () => {
-    setIsTimerActive(true);
-    setTimer(120); // Reset the timer to 2 minutes
   };
 
-  const stopTimer = () => {
-    setIsTimerActive(false);
-  };
-
-  // Access user's camera
   useEffect(() => {
     const getUserCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -110,7 +107,6 @@ const InterviewPage = () => {
       getUserCamera();
     }
 
-    // Clean up the video stream when component unmounts
     return () => {
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject;
@@ -120,20 +116,37 @@ const InterviewPage = () => {
     };
   }, [isWebcamVisible]);
 
-  // Fetch the next question
-  const fetchNextQuestion = () => {
-    const nextQuestion = interviewQuestions[questionIndex];
-    setCurrentQuestion(nextQuestion);
-    setIsLoading(false);
-  };
-
   useEffect(() => {
-    fetchNextQuestion();
-  }, [questionIndex]);
+    if (isTranscribing) {
+      SpeechRecognition.startListening({ continuous: true, language: "en-IN" });
+    }
+
+    return () => {
+      SpeechRecognition.stopListening();
+    };
+  }, [isTranscribing]);
 
   if (!browserSupportsSpeechRecognition) {
     return <p>Speech Recognition API is not supported in this browser.</p>;
   }
+
+  const Submit = async () => {
+    const formData = new FormData();
+    formData.append("answers", JSON.stringify(question));
+    formData.append("id", id);
+    navigate('/mock-interview');
+
+    try {
+      const res = await axiosInstance.post('anaylzer/submitmockinterview/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: "50px" }}>
@@ -141,55 +154,73 @@ const InterviewPage = () => {
 
       {/* Resume Upload Section */}
       {!isResumeUploaded && (
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <form onSubmit={handleSubmit} style={{ marginTop: "20px", textAlign: "center" }}>
           <input
             type="file"
             accept=".pdf,.doc,.docx"
             onChange={handleResumeUpload}
-            style={{ marginBottom: "10px" }}
+            style={{ marginBottom: "10px", marginRight: "5px", border: '2px solid' }}
           />
-          <button onClick={handleNextClick} style={{ padding: "8px", borderRadius: "10px", backgroundColor: "green", color: "white" }}>
-            Next
+          <input
+            type="text"
+            name="transcript"
+            value={formState.transcript}
+            onChange={handleInputChange}
+            style={{ borderRadius: "20px", padding: "10px", marginBottom: "10px", marginRight: "5px", border: '2px solid' }}
+            placeholder="Enter Transcript"
+          />
+          <input
+            type="text"
+            name="role"
+            value={formState.role}
+            onChange={handleInputChange}
+            style={{ borderRadius: "20px", padding: "10px", marginRight: "5px", marginBottom: "10px", border: '2px solid' }}
+            placeholder="Enter Role"
+          />
+          <button
+            type="submit"
+            style={{
+              padding: "10px",
+              borderRadius: "10px",
+              backgroundColor: "green",
+              color: "white",
+              marginBottom: "10px",
+            }}
+          >
+            Upload
           </button>
+          {loading && <p>Loading...</p>} {/* Loader */}
           {error && <p style={{ color: "red" }}>{error}</p>}
-        </div>
+        </form>
       )}
 
       {/* Webcam and Transcript Section */}
       {isWebcamVisible && (
-        <div className="flex flex-row" style={{ display: "flex", flexDirection: "row", marginTop: "20px" }}>
-          <div style={{ Width: "80vh" }}>
-            <video
-              style={{ borderRadius: "30px" }}
-              ref={videoRef}
-              autoPlay
-              muted
-              className="video"
-            ></video>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "start", marginTop: "20px", gap: '20px' }}>
+          <div style={{ width: "80vh" }}>
+            <video ref={videoRef} autoPlay muted style={{ borderRadius: "30px" }}></video>
           </div>
-          <div style={{ color: "black", padding: "20px", borderRadius: "30px", border: "1px solid black" }}>
-            <div className="container">
-              <h2 style={{ color: "black" }}>{currentQuestion}</h2>
-              <br />
-              <div className="main-content">{transcript}</div>
-              <div className="btn-style">
-                <button
-                  style={{ backgroundColor: `${micText === "Start" ? 'blue' : 'red'}`, padding: "8px", borderRadius: "10px", color: "white" }}
-                  onClick={handleMic}
-                  disabled={timer === 0}
-                >
-                  {micText}
+          <div style={{ padding: "20px", borderRadius: "30px", border: "1px solid black", marginTop: "20px" }}>
+            <h2>Question {currentQuestionIndex + 1}: {question[currentQuestionIndex]?.question[0]}</h2>
+            <p style={{ fontSize: '30px' }}>{transcript ? transcript : 'Listening...'}</p>
+            {question.length > 0 && (
+              <div>
+                <button onClick={handlePreviousQuestion} disabled={currentQuestionIndex === 0} style={{ marginRight: "10px", backgroundColor: 'green', padding: '10px', color: 'white', borderRadius: '20px' }}>
+                  Previous
+                </button>
+                <button onClick={handleNextQuestion} disabled={currentQuestionIndex === question.length - 1} style={{ backgroundColor: 'green', padding: '10px', color: 'white', borderRadius: '20px' }}>
+                  Next
                 </button>
               </div>
-              <div className="timer">
-                <h3>Timer: {timer}s</h3>
-              </div>
-            </div>
-            <div className="score-container">
-              <h2 className="score-title">Score: {score}</h2>
-            </div>
+            )}
           </div>
         </div>
+      )}
+      {isResumeUploaded && <p style={{ color: "green" }}>Resume uploaded successfully!</p>}
+
+      {/* Display the submit button only on the last question */}
+      {isWebcamVisible && currentQuestionIndex === question.length - 1 && (
+        <button onClick={Submit} style={{ backgroundColor: 'green', padding: '10px', borderRadius: '20px' }}>Submit</button>
       )}
     </div>
   );

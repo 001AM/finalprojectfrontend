@@ -9,6 +9,8 @@ const Feed = ({ posts }) => {
         display: "flex",
         flexDirection: "column",
         height: "90%",
+        width:"95%",
+        marginLeft:"2.1rem"
       }}
     >
       <div
