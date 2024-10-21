@@ -16,7 +16,7 @@ const PostBar = () => {
   };
 
   return (
-    <div className="post-bar mw-100 shadow-lg bg-white">
+    <div className="post-bar w-4/5 shadow-lg bg-white" style={{'min-width':'95%'}}>
       <div className="post-input">
         <img
           src="https://via.placeholder.com/40"

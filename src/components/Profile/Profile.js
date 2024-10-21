@@ -1,111 +1,239 @@
-import React from 'react';
-import './Profile.css'; // Create a separate CSS file for styles
+import React, { useEffect, useState } from "react";
+import CreateAxiosInstance from "../Axios";
 
 export default function ProfilePage() {
+  const [profileData, setProfileData] = useState(null);
+  const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    bio: '',
+    website: '',
+    location: '',
+    gender: '',
+    firstName: '',
+    lastName: '',
+  });
+
+  const axiosInstance = CreateAxiosInstance();
+
+  useEffect(() => {
+    // Fetch profile data from the API
+    axiosInstance.get(`http://192.168.0.107:8000/authentication/get_user_profile/?id=1`)
+      .then(response => {
+        setProfileData(response.data);
+        setFormData({
+          bio: response.data.bio || '',
+          website: response.data.website || '',
+          location: response.data.location || '',
+          gender: response.data.gender || '',
+          firstName: response.data.user.first_name || '',
+          lastName: response.data.user.last_name || '',
+        });
+      })
+      .catch(error => {
+        setError("Failed to fetch profile data. Please try again later.");
+        console.error("Error fetching profile data:", error);
+      });
+  }, []);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Update the user profile data in the API using PATCH
+    axiosInstance.patch(`http://192.168.0.107:8000/authentication/update-user-profile/`, {
+      bio: formData.bio,
+      website: formData.website,
+      location: formData.location,
+      gender: formData.gender,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+    })
+      .then(response => {
+        setProfileData(response.data);
+        closeModal(); // Close the modal after a successful update
+      })
+      .catch(error => {
+        setError("Failed to update the profile. Please try again later.");
+        console.error("Error updating profile:", error);
+      });
+  };
+
   return (
-    <section className="profile-section">
-      <div className="container">
-        <div className="breadcrumb">
-          <a href="#">Home</a> &gt; <a href="#">User</a> &gt; <span>User Profile</span>
+    <section className="profile-section py-10">
+      <div className="container mx-auto">
+        <div className="breadcrumb text-gray-600 mb-4">
+          <a href="#" className="hover:text-blue-500">Home</a> &gt; 
+          <a href="#" className="hover:text-blue-500">User</a> &gt; 
+          <span>User Profile</span>
         </div>
 
         <div className="profile-content">
-          <div className="profile-card">
-            <div className="profile-header">
-              <img
-                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                alt="avatar"
-                className="avatar"
-              />
-              <p className="role">Full Stack Developer</p>
-              <p className="location">Bay Area, San Francisco, CA</p>
+          <div className="profile-card bg-white p-6 rounded-lg shadow-lg">
+            <div className="profile-header flex items-center justify-between">
+              {profileData?.profile_picture ? (
+                <img
+                  src={`http://127.0.0.1:8000${profileData.profile_picture}`}
+                  alt="avatar"
+                  className="avatar w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <div className="avatar w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
+                  <span className="text-white">No Image</span>
+                </div>
+              )}
               <div className="buttons">
-                <button className="follow-btn">Follow</button>
-                <button className="message-btn">Message</button>
+                <button 
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  onClick={openModal}
+                >
+                  Edit
+                </button>
               </div>
             </div>
 
-            <div className="social-links">
-              <div className="link">
-                <i className="fas fa-globe"></i>
-                <span>https://mdbootstrap.com</span>
-              </div>
-              <div className="link">
-                <i className="fab fa-github"></i>
-                <span>mdbootstrap</span>
-              </div>
-              <div className="link">
-                <i className="fab fa-twitter"></i>
-                <span>@mdbootstrap</span>
-              </div>
-              <div className="link">
-                <i className="fab fa-instagram"></i>
-                <span>mdbootstrap</span>
-              </div>
-              <div className="link">
-                <i className="fab fa-facebook"></i>
-                <span>mdbootstrap</span>
-              </div>
-            </div>
-          </div>
+            {error && <p className="text-red-500 mt-4">{error}</p>}
 
-          <div className="info-card">
-            <div className="info-row">
-              <span>Full Name</span>
-              <span className="text-muted">Johnatan Smith</span>
-            </div>
-            <div className="info-row">
-              <span>Email</span>
-              <span className="text-muted">example@example.com</span>
-            </div>
-            <div className="info-row">
-              <span>Phone</span>
-              <span className="text-muted">(097) 234-5678</span>
-            </div>
-            <div className="info-row">
-              <span>Mobile</span>
-              <span className="text-muted">(098) 765-4321</span>
-            </div>
-            <div className="info-row">
-              <span>Address</span>
-              <span className="text-muted">Bay Area, San Francisco, CA</span>
-            </div>
-          </div>
-
-          <div className="project-status">
-            <h4>Project Status</h4>
-            <div className="project-item">
-              <span>Web Design</span>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: '80%' }}></div>
+            {profileData ? (
+              <div className="info-card mt-6 space-y-4">
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">User ID:</span>
+                  <span className="text-gray-600">{profileData.user.id}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">First Name:</span>
+                  <span className="text-gray-600">{profileData.user.first_name || "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Last Name:</span>
+                  <span className="text-gray-600">{profileData.user.last_name || "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Email:</span>
+                  <span className="text-gray-600">{profileData.user.email}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Bio:</span>
+                  <span className="text-gray-600">{profileData.bio || "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Website:</span>
+                  <span className="text-gray-600">{profileData.website || "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Location:</span>
+                  <span className="text-gray-600">{profileData.location || "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Date of Birth:</span>
+                  <span className="text-gray-600">{profileData.date_of_birth ? new Date(profileData.date_of_birth).toLocaleDateString() : "N/A"}</span>
+                </div>
+                <div className="info-row flex justify-between">
+                  <span className="font-semibold">Gender:</span>
+                  <span className="text-gray-600">{profileData.gender || "N/A"}</span>
+                </div>
               </div>
-            </div>
-            <div className="project-item">
-              <span>Website Markup</span>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: '72%' }}></div>
-              </div>
-            </div>
-            <div className="project-item">
-              <span>One Page</span>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: '89%' }}></div>
-              </div>
-            </div>
-            <div className="project-item">
-              <span>Mobile Template</span>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: '55%' }}></div>
-              </div>
-            </div>
-            <div className="project-item">
-              <span>Backend API</span>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: '66%' }}></div>
-              </div>
-            </div>
+            ) : (
+              <p>Loading profile data...</p>
+            )}
           </div>
         </div>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg w-full max-w-md">
+              <span 
+                className="close cursor-pointer text-red-500 text-2xl"
+                onClick={closeModal}
+              >
+                &times;
+              </span>
+              <form onSubmit={handleSubmit} className="mt-4">
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">Bio</label>
+                  <input
+                    type="text"
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">Gender</label>
+                  <input
+                    type="text"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <div className="form-group mb-4">
+                  <label className="block font-semibold">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded mt-1"
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Save
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
